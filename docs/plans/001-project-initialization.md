@@ -46,8 +46,13 @@ devsanar/
 ### 1. Parent POM Maven
 - Define Spring Boot 3.3.x como parent
 - Declara os 5 serviços como módulos
-- Centraliza versões de dependências (PostgreSQL, JWT, Kafka, Redis, Lombok)
-- Configura plugins compartilhados
+- Centraliza versões de dependências:
+  - Spring Cloud: 2023.0.x (compatível com Boot 3.3)
+  - PostgreSQL Driver: gerenciado pelo Spring Boot BOM
+  - MySQL Connector: gerenciado pelo Spring Boot BOM
+  - jjwt: 0.12.x
+  - Lombok: gerenciado pelo Spring Boot BOM
+- Configura plugins compartilhados (spring-boot-maven-plugin, maven-compiler-plugin)
 
 ### 2. Microsserviços Spring Boot (5x)
 
@@ -74,10 +79,12 @@ Cada serviço segue estrutura hexagonal:
   - spring-boot-starter-web
   - spring-boot-starter-data-jpa
   - spring-boot-starter-security
-  - jjwt (JWT)
+  - jjwt-api, jjwt-impl, jjwt-jackson (JWT)
   - postgresql
   - spring-boot-starter-data-redis
   - spring-boot-starter-validation
+  - spring-boot-starter-actuator
+  - flyway-core
   - lombok
 
 - **question-service:**
@@ -86,6 +93,8 @@ Cada serviço segue estrutura hexagonal:
   - spring-kafka
   - postgresql
   - spring-boot-starter-validation
+  - spring-boot-starter-actuator
+  - flyway-core
   - lombok
 
 - **reputation-service:**
@@ -93,12 +102,15 @@ Cada serviço segue estrutura hexagonal:
   - spring-boot-starter-data-jpa
   - spring-kafka
   - mysql-connector-java
+  - spring-boot-starter-actuator
+  - flyway-core
   - lombok
 
 - **notification-service:**
   - spring-boot-starter-web
   - spring-kafka
   - spring-boot-starter-mail
+  - spring-boot-starter-actuator
   - lombok
 
 - **api-gateway:**
@@ -122,10 +134,12 @@ frontend/
 ```
 
 **Dependências:**
-- Angular 22
-- TypeScript
-- Tailwind CSS
-- RxJS
+- @angular/core: ^22.0.0
+- TypeScript: ~5.6.0
+- Tailwind CSS: ^3.4.0
+- RxJS: ^7.8.0
+- @angular/common/http (cliente HTTP)
+- @angular/router (roteamento)
 
 ### 4. Infraestrutura Docker
 
@@ -184,6 +198,30 @@ Cada serviço tem 2 Dockerfiles:
 - Stage 1: Build com `node:22` → gera dist/
 - Stage 2: nginx:alpine + copia dist/
 - Imagem final ~20MB
+
+### 6. Estrutura de Testes
+
+Cada serviço Spring Boot inclui:
+
+**Testes Unitários:**
+- Dependências: JUnit 5, Mockito, AssertJ
+- Localização: `src/test/java`
+- Escopo: Lógica de domínio isolada, sem Spring context
+- Cobertura: Domain services, entidades, value objects
+
+**Testes de Integração:**
+- Dependências: 
+  - spring-boot-starter-test
+  - testcontainers (PostgreSQL, MySQL, Kafka)
+  - rest-assured (para testes de API)
+- Localização: `src/test/java` com anotação `@Tag("integration")`
+- Escopo: Endpoints REST, repositories JPA, consumers Kafka
+- Configuração: `@SpringBootTest` com Testcontainers
+
+**Frontend (Angular):**
+- Framework: Jasmine + Karma (padrão Angular)
+- Testes unitários para componentes, services e pipes
+- Testes e2e com Playwright (fase futura)
 
 ## Critérios de Aceitação
 

@@ -54,6 +54,15 @@ Todas as decisões arquiteturais significativas são documentadas como ADRs em `
 
 Ao fazer mudanças arquiteturais, crie um novo ADR ou atualize os existentes. Isso cria um registro histórico do porquê das decisões.
 
+**ADRs do Projeto:**
+
+- [ADR-001: Arquitetura Monorepo](docs/adrs/001-arquitetura-monorepo.md) - Por que escolhemos monorepo ao invés de multi-repo
+- [ADR-002: Java 21 e Spring Boot 3.3.x](docs/adrs/002-versoes-java-spring.md) - Versões de Java e Spring Boot, recursos modernos
+- [ADR-003: Angular 22 para Frontend](docs/adrs/003-angular-22.md) - Framework e versão do frontend, standalone components
+- [ADR-004: Arquitetura Hexagonal](docs/adrs/004-arquitetura-hexagonal.md) - Estrutura interna dos serviços, pacotes por camada
+- [ADR-005: Autenticação JWT](docs/adrs/005-autenticacao-jwt.md) - Estratégia de autenticação stateless entre microsserviços
+- [ADR-006: Estratégia Docker](docs/adrs/006-estrategia-docker.md) - Dockerfiles separados para dev/prod, Docker Compose
+
 ### Planos de Implementação
 
 Planos de execução e quebra de tarefas são armazenados em `docs/plans/`. Estes documentam a abordagem passo a passo para implementar funcionalidades ou infraestrutura.

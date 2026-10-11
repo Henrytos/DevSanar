@@ -1,0 +1,14 @@
+FROM eclipse-temurin:21-jdk
+
+WORKDIR /app
+
+COPY pom.xml .
+COPY services/reputation-service/pom.xml services/reputation-service/
+COPY services/reputation-service/src services/reputation-service/src
+
+RUN apt-get update && apt-get install -y maven && \
+    mvn dependency:go-offline -B
+
+EXPOSE 8083
+
+CMD ["mvn", "-pl", "services/reputation-service", "spring-boot:run"]

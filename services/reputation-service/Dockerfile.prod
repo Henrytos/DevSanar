@@ -1,0 +1,20 @@
+FROM eclipse-temurin:21-jdk AS builder
+
+WORKDIR /app
+
+COPY pom.xml .
+COPY services/reputation-service/pom.xml services/reputation-service/
+COPY services/reputation-service/src services/reputation-service/src
+
+RUN apt-get update && apt-get install -y maven && \
+    mvn clean package -DskipTests -pl services/reputation-service -am
+
+FROM eclipse-temurin:21-jre
+
+WORKDIR /app
+
+COPY --from=builder /app/services/reputation-service/target/*.jar app.jar
+
+EXPOSE 8083
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

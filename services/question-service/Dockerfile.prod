@@ -1,0 +1,20 @@
+FROM eclipse-temurin:21-jdk AS builder
+
+WORKDIR /app
+
+COPY pom.xml .
+COPY services/question-service/pom.xml services/question-service/
+COPY services/question-service/src services/question-service/src
+
+RUN apt-get update && apt-get install -y maven && \
+    mvn clean package -DskipTests -pl services/question-service -am
+
+FROM eclipse-temurin:21-jre
+
+WORKDIR /app
+
+COPY --from=builder /app/services/question-service/target/*.jar app.jar
+
+EXPOSE 8082
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

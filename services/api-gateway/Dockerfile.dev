@@ -1,0 +1,14 @@
+FROM eclipse-temurin:21-jdk
+
+WORKDIR /app
+
+COPY pom.xml .
+COPY services/api-gateway/pom.xml services/api-gateway/
+COPY services/api-gateway/src services/api-gateway/src
+
+RUN apt-get update && apt-get install -y maven && \
+    mvn dependency:go-offline -B
+
+EXPOSE 8080
+
+CMD ["mvn", "-pl", "services/api-gateway", "spring-boot:run"]

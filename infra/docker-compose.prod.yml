@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  user-service:
+    build:
+      context: ..
+      dockerfile: services/user-service/Dockerfile.prod
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+  question-service:
+    build:
+      context: ..
+      dockerfile: services/question-service/Dockerfile.prod
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+  reputation-service:
+    build:
+      context: ..
+      dockerfile: services/reputation-service/Dockerfile.prod
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+  notification-service:
+    build:
+      context: ..
+      dockerfile: services/notification-service/Dockerfile.prod
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+  api-gateway:
+    build:
+      context: ..
+      dockerfile: services/api-gateway/Dockerfile.prod
+    restart: always
+    environment:
+      SPRING_PROFILES_ACTIVE: prod
+
+  frontend:
+    build:
+      context: ../frontend
+      dockerfile: Dockerfile.prod
+    restart: always

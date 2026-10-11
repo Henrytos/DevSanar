@@ -1,0 +1,180 @@
+version: '3.8'
+
+services:
+  # Infrastructure
+  postgres-users:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: users
+      POSTGRES_USER: devsanar
+      POSTGRES_PASSWORD: devsanar
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-users-data:/var/lib/postgresql/data
+    networks:
+      - devsanar-network
+
+  postgres-questions:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: questions
+      POSTGRES_USER: devsanar
+      POSTGRES_PASSWORD: devsanar
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-questions-data:/var/lib/postgresql/data
+    networks:
+      - devsanar-network
+
+  mysql-reputation:
+    image: mysql:8.0
+    environment:
+      MYSQL_DATABASE: reputation
+      MYSQL_USER: devsanar
+      MYSQL_PASSWORD: devsanar
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql-reputation-data:/var/lib/mysql
+    networks:
+      - devsanar-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - devsanar-network
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    volumes:
+      - zookeeper-data:/var/lib/zookeeper/data
+      - zookeeper-logs:/var/lib/zookeeper/log
+    networks:
+      - devsanar-network
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    depends_on:
+      - zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+    ports:
+      - "9092:9092"
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - devsanar-network
+
+  # Services
+  user-service:
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile.dev
+    ports:
+      - "8081:8081"
+    depends_on:
+      - postgres-users
+      - redis
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-users:5432/users
+      SPRING_DATA_REDIS_HOST: redis
+    networks:
+      - devsanar-network
+
+  question-service:
+    build:
+      context: .
+      dockerfile: services/question-service/Dockerfile.dev
+    ports:
+      - "8082:8082"
+    depends_on:
+      - postgres-questions
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-questions:5432/questions
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+      - devsanar-network
+
+  reputation-service:
+    build:
+      context: .
+      dockerfile: services/reputation-service/Dockerfile.dev
+    ports:
+      - "8083:8083"
+    depends_on:
+      - mysql-reputation
+      - kafka
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-reputation:3306/reputation
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+      - devsanar-network
+
+  notification-service:
+    build:
+      context: .
+      dockerfile: services/notification-service/Dockerfile.dev
+    ports:
+      - "8084:8084"
+    depends_on:
+      - kafka
+    environment:
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+    networks:
+      - devsanar-network
+
+  api-gateway:
+    build:
+      context: .
+      dockerfile: services/api-gateway/Dockerfile.dev
+    ports:
+      - "8080:8080"
+    depends_on:
+      - user-service
+      - question-service
+      - reputation-service
+      - notification-service
+    networks:
+      - devsanar-network
+
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile.dev
+    ports:
+      - "4200:4200"
+    depends_on:
+      - api-gateway
+    volumes:
+      - ./frontend/src:/app/src
+    networks:
+      - devsanar-network
+
+networks:
+  devsanar-network:
+    driver: bridge
+
+volumes:
+  postgres-users-data:
+  postgres-questions-data:
+  mysql-reputation-data:
+  redis-data:
+  zookeeper-data:
+  zookeeper-logs:
+  kafka-data:

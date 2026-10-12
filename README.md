@@ -92,7 +92,7 @@ Arquitetura de microsserviços, com um **API Gateway** como porta de entrada ún
 - **Mês 3 — Produção:** containerização completa, manifests Kubernetes, pipeline de CI/CD no GitHub Actions, observabilidade (Prometheus/Grafana + Actuator), deploy real na AWS.
 - **Extra (se sobrar fôlego):** busca full-text, badges de gamificação, painel admin.
 
-## 7. Estrutura de pastas sugerida
+## 7. Estrutura de pastas
 
 ```
 devsanar/
@@ -105,17 +105,160 @@ devsanar/
 ├── frontend/
 ├── infra/
 │   ├── docker-compose.yml
-│   ├── k8s/
-│   │   ├── user-service.yaml
-│   │   ├── question-service.yaml
-│   │   └── ...
-│   └── observability/
-│       ├── prometheus.yml
-│       └── grafana-dashboards/
+│   ├── docker-compose.dev.yml
+│   ├── docker-compose.prod.yml
+│   └── .env.example
 ├── .github/
 │   └── workflows/
 │       └── ci-cd.yml
-└── docs/
-    ├── adr/              # Architecture Decision Records
-    └── diagrams/
+├── docs/
+│   ├── adrs/             # Architecture Decision Records
+│   └── plans/            # Implementation Plans
+├── Makefile
+└── README.md
+```
+
+## 8. Como executar o projeto
+
+### Pré-requisitos
+
+- Docker e Docker Compose instalados
+- Java 21+ (para desenvolvimento local)
+- Maven 3.8+ (para desenvolvimento local)
+- Node.js 22+ (para desenvolvimento frontend local)
+
+### Comandos disponíveis (Makefile)
+
+```bash
+# Ver todos os comandos disponíveis
+make help
+
+# Desenvolvimento com live reload
+make dev
+
+# Desenvolvimento em background
+make dev-bg
+
+# Produção (builds otimizados)
+make prod
+
+# Apenas infraestrutura (bancos, Kafka, Redis)
+make up
+
+# Parar containers
+make down
+
+# Ver logs
+make logs
+
+# Ver logs de um serviço específico
+make logs-service SERVICE=user-service
+
+# Health check dos serviços
+make health
+
+# Rebuild após mudanças no código
+make rebuild
+
+# Rebuild de serviço específico
+make rebuild-service SERVICE=question-service
+
+# Limpar tudo (remove volumes - CUIDADO!)
+make clean
+```
+
+### Execução rápida
+
+**Modo desenvolvimento (com live reload):**
+```bash
+make dev
+```
+
+Serviços disponíveis:
+- API Gateway: http://localhost:8080
+- User Service: http://localhost:8081/actuator/health
+- Question Service: http://localhost:8082/actuator/health
+- Reputation Service: http://localhost:8083/actuator/health
+- Notification Service: http://localhost:8084/actuator/health
+- Frontend Angular: http://localhost:4200
+
+**Modo produção:**
+```bash
+make prod
+```
+
+### Desenvolvimento local (sem Docker)
+
+**Backend:**
+```bash
+# Compilar todos os serviços
+mvn clean install
+
+# Executar um serviço específico
+cd services/user-service
+mvn spring-boot:run
+```
+
+**Frontend:**
+```bash
+cd frontend
+npm install
+npm start
+```
+
+### Testes
+
+```bash
+# Executar todos os testes
+make test
+
+# Ou diretamente com Maven
+mvn test
+
+# Testes de integração
+mvn verify
+```
+
+### Estrutura dos serviços
+
+Cada serviço Spring Boot segue arquitetura hexagonal:
+
+```
+<nome-servico>/
+├── src/main/java/com/devsanar/<servico>/
+│   ├── domain/                 # Entidades, VOs, interfaces de porta
+│   ├── application/            # Casos de uso, services
+│   ├── adapter/
+│   │   ├── in/web/            # Controllers REST
+│   │   └── out/persistence/   # Repositories JPA
+│   ├── config/                 # Configuração Spring
+│   └── <Servico>Application.java
+├── src/main/resources/
+│   ├── application.yml
+│   └── db/migration/          # Migrações Flyway
+└── src/test/java/
+```
+
+### Troubleshooting
+
+**Containers não iniciam:**
+```bash
+# Ver logs detalhados
+make logs
+
+# Verificar status
+make ps
+
+# Rebuild limpo
+make build-nc
+make dev
+```
+
+**Porta já em uso:**
+- Verifique se há outros serviços rodando nas portas 8080-8084, 4200, 5432-5433, 3306, 6379, 9092
+
+**Erro de compilação Maven:**
+```bash
+# Limpar e recompilar
+mvn clean install -U
 ```

@@ -3,30 +3,30 @@ version: '3.8'
 services:
   user-service:
     volumes:
-      - ./services/user-service/src:/app/services/user-service/src
+      - ../services/user-service/src:/app/services/user-service/src
     environment:
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   question-service:
     volumes:
-      - ./services/question-service/src:/app/services/question-service/src
+      - ../services/question-service/src:/app/services/question-service/src
     environment:
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   reputation-service:
     volumes:
-      - ./services/reputation-service/src:/app/services/reputation-service/src
+      - ../services/reputation-service/src:/app/services/reputation-service/src
     environment:
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   notification-service:
     volumes:
-      - ./services/notification-service/src:/app/services/notification-service/src
+      - ../services/notification-service/src:/app/services/notification-service/src
     environment:
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
 
   api-gateway:
     volumes:
-      - ./services/api-gateway/src:/app/services/api-gateway/src
+      - ../services/api-gateway/src:/app/services/api-gateway/src
     environment:
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"

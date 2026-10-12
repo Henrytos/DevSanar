@@ -83,7 +83,7 @@ services:
   # Services
   user-service:
     build:
-      context: .
+      context: ..
       dockerfile: services/user-service/Dockerfile.dev
     ports:
       - "8081:8081"
@@ -98,7 +98,7 @@ services:
 
   question-service:
     build:
-      context: .
+      context: ..
       dockerfile: services/question-service/Dockerfile.dev
     ports:
       - "8082:8082"
@@ -113,7 +113,7 @@ services:
 
   reputation-service:
     build:
-      context: .
+      context: ..
       dockerfile: services/reputation-service/Dockerfile.dev
     ports:
       - "8083:8083"
@@ -128,7 +128,7 @@ services:
 
   notification-service:
     build:
-      context: .
+      context: ..
       dockerfile: services/notification-service/Dockerfile.dev
     ports:
       - "8084:8084"
@@ -141,7 +141,7 @@ services:
 
   api-gateway:
     build:
-      context: .
+      context: ..
       dockerfile: services/api-gateway/Dockerfile.dev
     ports:
       - "8080:8080"
@@ -155,14 +155,14 @@ services:
 
   frontend:
     build:
-      context: frontend
+      context: ../frontend
       dockerfile: Dockerfile.dev
     ports:
       - "4200:4200"
     depends_on:
       - api-gateway
     volumes:
-      - ./frontend/src:/app/src
+      - ../frontend/src:/app/src
     networks:
       - devsanar-network
 
